@@ -1,0 +1,49 @@
+{
+  "name": "lightrail-csv-importer",
+  "version": "1.0.0",
+  "description": "Import CSV files into Lightrail",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf ./dist",
+    "exec": "ts-node ./src",
+    "test": "mocha --recursive --timeout 5000 --require ts-node/register --exit \"test/**/*.ts\"",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Giftbit/lightrail-csv-importer.git"
+  },
+  "keywords": [
+    "lightrail",
+    "csv"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Giftbit/lightrail-csv-importer/issues"
+  },
+  "homepage": "https://github.com/Giftbit/lightrail-csv-importer#readme",
+  "devDependencies": {
+    "@types/chai": "^4.2.11",
+    "@types/inquirer": "^6.5.0",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.9.3",
+    "@types/yargs": "^15.0.4",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "mocha": "^7.1.1",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8.8.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "inquirer": "^7.1.0",
+    "lightrail-client": "^4.3.2",
+    "loglevel": "^1.6.7",
+    "papaparse": "^5.1.1",
+    "yargs": "^15.3.1"
+  }
+}
