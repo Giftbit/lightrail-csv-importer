@@ -9,7 +9,7 @@ async function main(): Promise<void> {
     const argv = yargs
         .option("already-exists", {
             type: "string",
-            describe: "handling objects that already exist in Lightrail",
+            describe: "how to handle objects that already exist in Lightrail",
             choices: ["skip", "update", "warn", "exit"],
             default: "skip"
         })
@@ -21,6 +21,12 @@ async function main(): Promise<void> {
             type: "boolean",
             describe: "dry-run the command without making any changes to Lightrail"
         })
+        .option("encoding", {
+            type: "string",
+            describe: "the character encoding of csv files",
+            choices: ["ascii", "latin1", "ucs2", "utf16le", "utf8"],
+            default: "utf8"
+        })
         .option("verbose", {
             alias: "v",
             type: "boolean",
@@ -28,7 +34,6 @@ async function main(): Promise<void> {
         })
         .help("help")
         .alias("help", "h")
-        .epilog("Run with no options for interactive mode.")
         .strict()
         .argv;
 
@@ -41,7 +46,8 @@ async function main(): Promise<void> {
 
     const ctx: Context = {
         alreadyExists: argv["already-exists"] as any,
-        dryRun: argv["dry-run"]
+        dryRun: argv["dry-run"],
+        encoding: argv.encoding
     };
     if (!ctx.dryRun) {
         await configureLightrail(argv["api-key"]);

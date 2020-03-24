@@ -7,7 +7,7 @@ import {inquireCsvHeaderFields} from "./utils/inquirerUtils";
 
 export async function importContactsMenu(ctx: Context): Promise<void> {
     const recommendedFiles = await scanForFiles({extension: "csv"});
-    log.info("recommendedFiles=", recommendedFiles);
+    log.debug("recommendedFiles=", recommendedFiles);
 
     const csvFilenameRes = await inquirer.prompt([{
         name: "importContacts",
@@ -26,7 +26,7 @@ export async function importContactsMenu(ctx: Context): Promise<void> {
         return;
     }
 
-    const csvHeader = await parseCsvHeader(csvFilename);
+    const csvHeader = await parseCsvHeader(csvFilename, ctx.encoding);
     log.debug("csvHeader=", csvHeader);
 
     const [contactIdField, contactEmailField, contactFirstNameField, contactLastNameField] =
@@ -90,12 +90,12 @@ export async function importContacts(ctx: Context, params: ImportContactsParams)
     let contactUpdatedCount = 0;
     let contactSkippedCount = 0;
 
-    await streamCsv(params.fileame, async (row, lineNumber) => {
+    await streamCsv(params.fileame, ctx.encoding, async (row, lineNumber) => {
         const createContactParams = rowToCreateContactParams(row, params);
 
         try {
             if (ctx.dryRun) {
-                // log.debug(row);
+                log.debug("row=", row);
                 if (!createContactParams.id) {
                     log.info("Line", lineNumber, "is missing a Contact ID");
                 } else if (createContactParams.email && !/.*@.*/.test(createContactParams.email)) {

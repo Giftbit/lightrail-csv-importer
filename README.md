@@ -8,5 +8,5 @@ This project can be run directly from the repo following these steps:
 3. Install project dependencies with `npm install`.
 4. Run with `npm run exec`.
 
-## Scripting
-By default the project runs interactively.  It can also be run with command line switches for scripting.  For a list of command line switches `npm run exec -- -h`
+## Advanced options
+Get a list of advanced options on the command line: `npm run exec -- -h`

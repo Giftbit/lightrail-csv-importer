@@ -35,12 +35,15 @@ export function fileExists(fullPath: string): Promise<boolean> {
     });
 }
 
-export function parseCsvHeader(fullPath: string): Promise<{columns: string[], row: any}> {
+export function parseCsvHeader(fullPath: string, encoding: string): Promise<{columns: string[], row: any}> {
     return new Promise((resolve, reject) => {
-        const fileStream = fs.createReadStream(fullPath);
+        const fileStream = fs.createReadStream(fullPath, {encoding});
         Papa.parse(fileStream, {
             header: true,
             preview: 1,
+            skipEmptyLines: "greedy",
+            encoding,
+            dynamicTyping: false,
             error: err => {
                 reject(err);
             },
@@ -60,13 +63,15 @@ export function parseCsvHeader(fullPath: string): Promise<{columns: string[], ro
     });
 }
 
-export function streamCsv(fullPath: string, callback: (row: any, lineNumber: number) => Promise<void>): Promise<void> {
+export function streamCsv(fullPath: string, encoding: string, callback: (row: any, lineNumber: number) => Promise<void>): Promise<void> {
     return new Promise((resolve, reject) => {
-        const fileStream = fs.createReadStream(fullPath);
+        const fileStream = fs.createReadStream(fullPath, {encoding});
         let lineNumber = 2; // 1-indexed, line 1 is the header, line 2 is the first data row
         Papa.parse(fileStream, {
             header: true,
             skipEmptyLines: "greedy",
+            encoding,
+            dynamicTyping: false,
             error: err => {
                 reject(err);
             },
