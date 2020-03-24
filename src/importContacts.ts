@@ -4,6 +4,7 @@ import log = require("loglevel");
 import {Context} from "./Context";
 import {fileExists, parseCsvHeader, scanForFiles, streamCsv} from "./utils/fileUtils";
 import {inquireCsvHeaderFields} from "./utils/inquirerUtils";
+import {printStatusLine} from "./utils/printStatusLine";
 
 export async function importContactsMenu(ctx: Context): Promise<void> {
     const recommendedFiles = await scanForFiles({extension: "csv"});
@@ -90,6 +91,14 @@ export async function importContacts(ctx: Context, params: ImportContactsParams)
     let contactSkippedCount = 0;
 
     await streamCsv(params.filename, ctx.encoding, async (row, lineNumber) => {
+        printStatusLine(
+            [
+                [contactCreatedCount, "Contacts created"],
+                [contactUpdatedCount, "Contacts updated"],
+                [contactSkippedCount, "Contacts skipped"]
+            ]
+        );
+
         const createContactParams = rowToCreateContactParams(row, params);
 
         try {
@@ -108,8 +117,9 @@ export async function importContacts(ctx: Context, params: ImportContactsParams)
                 contactCreatedCount++;
             }
         } catch (err) {
-            if ((err as lightrail.LightrailRequestError).messageCode === "ContactExists") {
-                switch (this.alreadyExists) {
+            log.debug("error caught", JSON.stringify(err));
+            if ((err as lightrail.LightrailRequestError).messageCode === "ContactIdExists") {
+                switch (ctx.alreadyExists) {
                     case "skip":
                         log.debug(err.message, "skipping...");
                         contactSkippedCount++;
@@ -136,8 +146,15 @@ export async function importContacts(ctx: Context, params: ImportContactsParams)
     });
 
     if (!ctx.dryRun) {
-        log.info(contactCreatedCount, "Contacts created");
-        log.info(contactUpdatedCount, "Contacts updated");
-        log.info(contactSkippedCount, "Contacts skipped");
+        printStatusLine(
+            [
+                [contactCreatedCount, "Contacts created"],
+                [contactUpdatedCount, "Contacts updated"],
+                [contactSkippedCount, "Contacts skipped"]
+            ],
+            {
+                done: true
+            }
+        );
     }
 }

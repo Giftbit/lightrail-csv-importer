@@ -31,6 +31,7 @@
     "@types/node": "^13.9.3",
     "@types/papaparse": "^5.0.3",
     "@types/sinon": "^7.5.2",
+    "@types/uuid": "^7.0.2",
     "@types/yargs": "^15.0.4",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
@@ -47,6 +48,7 @@
     "lightrail-client": "^4.3.2",
     "loglevel": "^1.6.7",
     "papaparse": "^5.1.1",
+    "uuid": "^7.0.2",
     "yargs": "^15.3.1"
   }
 }

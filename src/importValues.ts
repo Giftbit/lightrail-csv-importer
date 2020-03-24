@@ -1,9 +1,11 @@
 import lightrail = require("lightrail-client");
 import inquirer = require("inquirer");
 import log = require("loglevel");
+import uuid = require("uuid");
 import {Context} from "./Context";
 import {fileExists, parseCsvHeader, scanForFiles, streamCsv} from "./utils/fileUtils";
 import {inquireCsvHeaderFields} from "./utils/inquirerUtils";
+import {printStatusLine} from "./utils/printStatusLine";
 
 export async function importValuesMenu(ctx: Context): Promise<void> {
     const recommendedFiles = await scanForFiles({extension: "csv"});
@@ -124,9 +126,18 @@ export async function importValues(ctx: Context, params: ImportValuesParams): Pr
     }
 
     let valueCreatedCount = 0;
+    let valueUpdatedCount = 0;
     let valueSkippedCount = 0;
 
     await streamCsv(params.filename, ctx.encoding, async (row, lineNumber) => {
+        printStatusLine(
+            [
+                [valueCreatedCount, "Values created"],
+                [valueUpdatedCount, "Values updated"],
+                [valueSkippedCount, "Values skipped"]
+            ]
+        );
+
         const createValueParams = rowToCreateValueParams(row, params);
 
         try {
@@ -147,15 +158,17 @@ export async function importValues(ctx: Context, params: ImportValuesParams): Pr
                 valueCreatedCount++;
             }
         } catch (err) {
-            if ((err as lightrail.LightrailRequestError).messageCode === "ValueExists") {
-                switch (this.alreadyExists) {
+            log.debug("error caught", JSON.stringify(err));
+            if ((err as lightrail.LightrailRequestError).messageCode === "ValueIdExists") {
+                switch (ctx.alreadyExists) {
                     case "skip":
                         log.debug(err.message, "skipping...");
                         valueSkippedCount++;
                         return;
                     case "update":
-                        // Most of these things cannot be updated
-                        log.warn(err.message);
+                        log.debug(err.message, "updating...");
+                        await updateValue(createValueParams);
+                        valueUpdatedCount++;
                         return;
                     case "warn":
                         log.warn(err.message);
@@ -170,7 +183,64 @@ export async function importValues(ctx: Context, params: ImportValuesParams): Pr
     });
 
     if (!ctx.dryRun) {
-        log.info(valueCreatedCount, "Values created");
-        log.info(valueSkippedCount, "Values skipped");
+        printStatusLine(
+            [
+                [valueCreatedCount, "Values created"],
+                [valueUpdatedCount, "Values updated"],
+                [valueSkippedCount, "Values skipped"]
+            ],
+            {
+                done: true
+            }
+        );
+    }
+}
+
+async function updateValue(createValueParams: lightrail.params.CreateValueParams): Promise<void> {
+    const value = await lightrail.values.getValue(createValueParams.id, {showCode: true});
+    if (value.body.currency !== createValueParams.currency) {
+        throw new Error(`Value with ID ${value.body.id} can not be updated to match the csv because the csv has currency ${createValueParams.currency} and the Value has currency ${value.body.currency} and the Value's currency can never be changed.`);
+    }
+    if (createValueParams.balance != null && value.body.balance !== createValueParams.balance) {
+        const balanceChange = createValueParams.balance - value.body.balance;
+        if (balanceChange > 0) {
+            const txParams: lightrail.params.CreditParams = {
+                id: uuid.v4(),
+                amount: balanceChange,
+                currency: value.body.currency,
+                destination: {
+                    rail: "lightrail",
+                    valueId: createValueParams.id
+                }
+            };
+            log.debug("txParams=", txParams);
+            const txRes = await lightrail.transactions.credit(txParams);
+            log.debug("txRes=", txRes);
+        } else {
+            const txParams: lightrail.params.DebitParams = {
+                id: uuid.v4(),
+                amount: -balanceChange,
+                currency: value.body.currency,
+                source: {
+                    rail: "lightrail",
+                    valueId: createValueParams.id
+                }
+            };
+            log.debug("txParams=", txParams);
+            const txRes = await lightrail.transactions.debit(txParams);
+            log.debug("txRes=", txRes);
+        }
+    }
+    if (!value.body.contactId) {
+        const attachParams = {valueId: createValueParams.id};
+        log.debug("attachParams=", attachParams);
+        const attachResp = await lightrail.contacts.attachContactToValue(createValueParams.contactId, attachParams);
+        log.debug("attachResp=", attachResp);
+    }
+    if (value.body.code !== createValueParams.code) {
+        const changeCodeParams = {code: createValueParams.code};
+        log.debug("changeCodeParams=", changeCodeParams);
+        const changeCodeResp = await lightrail.values.changeValuesCode(value.body, changeCodeParams);
+        log.debug("changeCodeResp=", changeCodeResp);
     }
 }

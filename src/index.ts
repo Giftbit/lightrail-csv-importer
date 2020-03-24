@@ -66,6 +66,10 @@ async function configureLightrail(apiKey?: string): Promise<void> {
             });
             apiKey = res.apiKey;
         }
+        if (apiKey && !/eyJ.+\.eyJ.+\..+/.test(apiKey)) {
+            log.error("API key does not appear to be valid.");
+            process.exit(1);
+        }
         lightrail.configure({
             apiKey: apiKey
         });
