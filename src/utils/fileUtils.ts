@@ -66,7 +66,7 @@ export function parseCsvHeader(fullPath: string, encoding: string): Promise<{col
 export function streamCsv(fullPath: string, encoding: string, callback: (row: any, lineNumber: number) => Promise<void>): Promise<void> {
     return new Promise((resolve, reject) => {
         const fileStream = fs.createReadStream(fullPath, {encoding});
-        let lineNumber = 2; // 1-indexed, line 1 is the header, line 2 is the first data row
+        let lineNumber = 1;
         Papa.parse(fileStream, {
             header: true,
             skipEmptyLines: "greedy",

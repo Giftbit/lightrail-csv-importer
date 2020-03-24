@@ -2,17 +2,17 @@ import log = require("loglevel");
 import inquirer = require("inquirer");
 import {Context} from "./Context";
 import {importContactsMenu} from "./importContacts";
-import {deleteContacts} from "./deleteContacts";
+import {importValuesMenu} from "./importValues";
 
 export async function mainMenu(ctx: Context): Promise<void> {
     while (true) {
-        const choices = [`Toggle dry run (currently ${ctx.dryRun ? "on" : "off"})`, "Import Contacts", "Delete all Contacts", "Exit"];
-        const res = await inquirer.prompt([{
+        const choices = [`Toggle dry run (currently ${ctx.dryRun ? "on" : "off"})`, "Import Contacts", "Import Values", "Exit"];
+        const res = await inquirer.prompt({
             name: "mainMenu",
             type: "list",
             message: "What would you like to do?",
             choices: choices
-        }]);
+        });
         switch (choices.indexOf(res.mainMenu)) {
             case 0:
                 ctx.dryRun = !ctx.dryRun;
@@ -26,7 +26,7 @@ export async function mainMenu(ctx: Context): Promise<void> {
                 await importContactsMenu(ctx);
                 break;
             case 2:
-                await deleteContacts(ctx);
+                await importValuesMenu(ctx);
                 break;
             default:
                 return;

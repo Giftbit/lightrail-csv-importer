@@ -59,11 +59,11 @@ async function main(): Promise<void> {
 async function configureLightrail(apiKey?: string): Promise<void> {
     try {
         if (!apiKey) {
-            const res = await inquirer.prompt([{
+            const res = await inquirer.prompt({
                 name: "apiKey",
                 type: "password",
                 message: "Enter your Lightrail API key"
-            }]);
+            });
             apiKey = res.apiKey;
         }
         lightrail.configure({

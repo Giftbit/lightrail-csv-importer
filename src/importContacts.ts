@@ -9,12 +9,12 @@ export async function importContactsMenu(ctx: Context): Promise<void> {
     const recommendedFiles = await scanForFiles({extension: "csv"});
     log.debug("recommendedFiles=", recommendedFiles);
 
-    const csvFilenameRes = await inquirer.prompt([{
+    const csvFilenameRes = await inquirer.prompt({
         name: "importContacts",
-        type: "string",
+        type: "input",
         default: recommendedFiles?.[0],
         message: "Enter the name of the csv file to import:"
-    }]);
+    });
     const csvFilename: string = csvFilenameRes.importContacts;
     log.debug("csvFilename=", csvFilenameRes.importContacts);
     if (!csvFilename) {
@@ -41,7 +41,7 @@ export async function importContactsMenu(ctx: Context): Promise<void> {
         );
 
     const importContactsParams: ImportContactsParams = {
-        fileame: csvFilename,
+        filename: csvFilename,
         fields: {
             id: contactIdField,
             email: contactEmailField,
@@ -50,19 +50,18 @@ export async function importContactsMenu(ctx: Context): Promise<void> {
         }
     };
     const exampleCreateContactParams = rowToCreateContactParams(csvHeader.row, importContactsParams);
-    const confirmRes = await inquirer.prompt([{
+    const confirmRes = await inquirer.prompt({
         name: "confirm",
         type: "confirm",
-        message: `Imported Contacts will look like ${JSON.stringify(exampleCreateContactParams)}.  Begin importing Contacts?`,
-        askAnswered: true
-    }]);
+        message: `Imported Contacts will look like ${JSON.stringify(exampleCreateContactParams)}.  Begin importing Contacts?`
+    });
     if (confirmRes.confirm) {
         await importContacts(ctx, importContactsParams);
     }
 }
 
 export interface ImportContactsParams {
-    fileame: string;
+    filename: string;
     fields: {
         id: string;
         email: string | null;
@@ -90,7 +89,7 @@ export async function importContacts(ctx: Context, params: ImportContactsParams)
     let contactUpdatedCount = 0;
     let contactSkippedCount = 0;
 
-    await streamCsv(params.fileame, ctx.encoding, async (row, lineNumber) => {
+    await streamCsv(params.filename, ctx.encoding, async (row, lineNumber) => {
         const createContactParams = rowToCreateContactParams(row, params);
 
         try {
@@ -112,12 +111,16 @@ export async function importContacts(ctx: Context, params: ImportContactsParams)
             if ((err as lightrail.LightrailRequestError).messageCode === "ContactExists") {
                 switch (this.alreadyExists) {
                     case "skip":
-                        log.debug("contact", createContactParams.id, "already exists, skipping...");
+                        log.debug(err.message, "skipping...");
                         contactSkippedCount++;
                         return;
                     case "update":
-                        log.debug("contact", createContactParams.id, "already exists, updating...");
-                        await lightrail.contacts.updateContact(createContactParams.id, createContactParams);
+                        log.debug(err.message, "updating...");
+                        await lightrail.contacts.updateContact(createContactParams.id, {
+                            email: createContactParams.email,
+                            firstName: createContactParams.firstName,
+                            lastName: createContactParams.lastName
+                        });
                         contactUpdatedCount++;
                         return;
                     case "warn":

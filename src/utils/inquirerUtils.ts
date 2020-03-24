@@ -6,14 +6,14 @@ export interface InquireCsvHeaderField {
 }
 
 export async function inquireCsvHeaderFields(headers: string[], fields: InquireCsvHeaderField[]): Promise<string[]> {
-    const skipFieldChoice = "(skip)";
+    const skipFieldChoice = "(skip this field)";
     const res = await inquirer.prompt(
         fields.map(field => {
             return {
                 name: field.purpose,
                 type: "list",
                 message: `Select the column containing the ${field.purpose}`,
-                choices: [...headers, ...(field.allowSkip ? [skipFieldChoice] : [])],
+                choices: [...(field.allowSkip ? [skipFieldChoice] : []), ...headers],
                 askAnswered: true
             }
         })

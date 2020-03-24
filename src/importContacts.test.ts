@@ -17,7 +17,7 @@ describe("importContacts", () => {
         sandbox = null;
     });
 
-    it("can import a csv", async () => {
+    it("imports a csv", async () => {
         const createContactParams: lightrail.params.CreateContactParams[] = [];
         sandbox.replace(lightrail.contacts, "createContact", params => {
             createContactParams.push(params);
@@ -36,7 +36,7 @@ describe("importContacts", () => {
                 encoding: "utf8"
             },
             {
-                fileame: path.join(__dirname, "..", "testData", "contacts-ascii.csv"),
+                filename: path.join(__dirname, "..", "testData", "contacts-ascii.csv"),
                 fields: {
                     id: "System ID",
                     email: "Email",
@@ -59,7 +59,7 @@ describe("importContacts", () => {
         chai.assert.equal(createContactParams[49].lastName, "Malet");
     });
 
-    it("can import a csv with utf8 characters", async () => {
+    it("imports a csv with utf8 characters", async () => {
         const createContactParams: lightrail.params.CreateContactParams[] = [];
         sandbox.replace(lightrail.contacts, "createContact", params => {
             createContactParams.push(params);
@@ -78,7 +78,7 @@ describe("importContacts", () => {
                 encoding: "utf8"
             },
             {
-                fileame: path.join(__dirname, "..", "testData", "contacts-international.csv"),
+                filename: path.join(__dirname, "..", "testData", "contacts-international.csv"),
                 fields: {
                     id: "GUID",
                     email: "Email",
@@ -115,7 +115,7 @@ describe("importContacts", () => {
                 encoding: "utf8"
             },
             {
-                fileame: path.join(__dirname, "..", "testData", "contacts-ascii.csv"),
+                filename: path.join(__dirname, "..", "testData", "contacts-ascii.csv"),
                 fields: {
                     id: "System ID",
                     email: "Email",
