@@ -1,7 +1,7 @@
 {
   "name": "lightrail-csv-importer",
   "version": "1.0.0",
-  "description": "Import CSV files into Lightrail",
+  "description": "Import csv files into Lightrail",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
