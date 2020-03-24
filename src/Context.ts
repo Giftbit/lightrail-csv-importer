@@ -1,5 +1,4 @@
-import Lightrail = require("lightrail-client");
-
 export interface Context {
-    apiKey: string | null;
+    alreadyExists: "skip" | "update" | "warn" | "exit";
+    dryRun: boolean;
 }
