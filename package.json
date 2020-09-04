@@ -47,7 +47,7 @@
     "inquirer": "^7.1.0",
     "lightrail-client": "^4.3.2",
     "loglevel": "^1.6.7",
-    "papaparse": "^5.1.1",
+    "papaparse": "^5.2.0",
     "uuid": "^7.0.2",
     "yargs": "^15.3.1"
   }
